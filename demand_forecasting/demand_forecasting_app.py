@@ -5,8 +5,11 @@ import os
 from datetime import datetime
 
 # --- Configuration ---
-MODEL_PATH = 'demand_forecasting_xgb_model.pkl'
-FEATURE_COLUMNS_PATH = 'feature_columns.pkl'
+# FIX: Use os.path.dirname(__file__) to correctly find the files 
+# relative to the script's location, which resolves the Streamlit Cloud error.
+BASE_DIR = os.path.dirname(__file__)
+MODEL_PATH = os.path.join(BASE_DIR, 'demand_forecasting_xgb_model.pkl')
+FEATURE_COLUMNS_PATH = os.path.join(BASE_DIR, 'feature_columns.pkl')
 
 # --- Model Loading and Alignment Functions ---
 
@@ -14,6 +17,7 @@ FEATURE_COLUMNS_PATH = 'feature_columns.pkl'
 def load_assets(model_path, feature_path):
     """Loads the trained XGBoost model and the feature blueprint safely."""
     
+    # Check if files exist using the corrected, absolute path
     if not os.path.exists(model_path) or not os.path.exists(feature_path):
         st.error("Error: Model or Feature Blueprint not found.")
         st.warning(f"Please run '{os.path.basename(MODEL_PATH)}' first to train the model.")
@@ -46,7 +50,7 @@ def align_features(user_inputs, feature_cols):
     if 'Units Sold_Lag_1' in aligned_data.columns:
         aligned_data['Units Sold_Lag_1'] = user_inputs['Units Sold_Lag_1'] 
     if 'Units Sold_Lag_7' in aligned_data.columns:
-        aligned_data['Units Sold_Lag_7'] = user_inputs['Units Sold_Lag_7']
+        aligned_data['Units Sold_7'] = user_inputs['Units Sold_Lag_7']
 
     # 4. Map One-Hot Encoded (OHE) Features
     
@@ -192,3 +196,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
