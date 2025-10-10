@@ -6,7 +6,6 @@ from datetime import datetime
 
 # --- Configuration ---
 # FIX: Use os.path.dirname(__file__) to correctly find the files 
-# relative to the script's location, which resolves the Streamlit Cloud error.
 BASE_DIR = os.path.dirname(__file__)
 MODEL_PATH = os.path.join(BASE_DIR, 'demand_forecasting_xgb_model.pkl')
 FEATURE_COLUMNS_PATH = os.path.join(BASE_DIR, 'feature_columns.pkl')
@@ -20,7 +19,7 @@ def load_assets(model_path, feature_path):
     # Check if files exist using the corrected, absolute path
     if not os.path.exists(model_path) or not os.path.exists(feature_path):
         st.error("Error: Model or Feature Blueprint not found.")
-        st.warning(f"Please run '{os.path.basename(MODEL_PATH)}' first to train the model.")
+        st.warning(f"Please ensure both the model and feature files are in the 'demand_forecasting/' folder.")
         return None, None
         
     try:
@@ -49,8 +48,10 @@ def align_features(user_inputs, feature_cols):
     # 3. Handle Lagged Features (Simulated Database Lookup)
     if 'Units Sold_Lag_1' in aligned_data.columns:
         aligned_data['Units Sold_Lag_1'] = user_inputs['Units Sold_Lag_1'] 
+    
+    # FIX IS HERE: Ensured the feature name is Units Sold_Lag_7
     if 'Units Sold_Lag_7' in aligned_data.columns:
-        aligned_data['Units Sold_7'] = user_inputs['Units Sold_Lag_7']
+        aligned_data['Units Sold_Lag_7'] = user_inputs['Units Sold_Lag_7'] 
 
     # 4. Map One-Hot Encoded (OHE) Features
     
@@ -130,10 +131,8 @@ def main():
         
     colC, colD = st.sidebar.columns(2)
     with colC:
-        # NEW INPUT
         weather = st.selectbox("Weather Condition", ['Sunny', 'Rainy', 'Cloudy'], index=0)
     with colD:
-        # NEW INPUT
         seasonality = st.selectbox("Seasonality (Quarter)", ['Q1', 'Q2', 'Q3', 'Q4'], index=0)
 
     # 3. Lagged Feature Simulation (Crucial for Time Series)
@@ -154,8 +153,8 @@ def main():
         'Inventory Level': inventory, 
         'Region': region,
         'Category': category,
-        'Weather Condition': weather, # Added to inputs
-        'Seasonality': seasonality,   # Added to inputs
+        'Weather Condition': weather,
+        'Seasonality': seasonality,
         'Units Sold_Lag_1': float(lag_1),
         'Units Sold_Lag_7': float(lag_7),
         'DayName': day_name,
@@ -196,5 +195,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
 
 
